@@ -1,8 +1,6 @@
 import sys
 import os
 import time
-import numpy as np
-import pandas as pd
 import logging
 from fastapi import APIRouter, Depends, FastAPI, Header, HTTPException,Request, Response, status
 from pydantic import BaseModel, Field, HttpUrl
