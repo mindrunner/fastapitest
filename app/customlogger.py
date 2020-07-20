@@ -203,7 +203,7 @@ class CustomFormatter(AccessFormatter):
 
 
         atoms.update({
-            'h': atoms.get("{b'remote-addr'}o", "-"),
+            'h': scope.get('client', '-'),
             'l': '-',
             'u': self._get_user(environ) or '-',
             't': self.now(),
@@ -211,9 +211,9 @@ class CustomFormatter(AccessFormatter):
             #                   environ['RAW_URI'],
             #                   environ["SERVER_PROTOCOL"]),
             #'s': status,
-            'm': atoms.get("{b'request-method'}o", "-"),
-            'U': atoms.get("{b'path-info'}o", "-"),
-            'q': atoms.get("{b'query-string'}o", "-"),
+            'm': scope.get('method', '-'),
+            'U': scope.get('raw_path','-'),
+            'q': scope.get('query_string','-'),
             'H': atoms.get("{b'server-protocol'}o", "-"),
             'b': getattr(resp, 'sent', None) is not None and str(resp.sent) or '-',
             'B': getattr(resp, 'sent', None),
