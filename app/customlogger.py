@@ -1,14 +1,12 @@
 import http
 import logging
-import sys
-from copy import copy
-from pprint import pprint
 import os
-from datetime import datetime
+import sys
 import time
+from copy import copy
+from datetime import datetime
 
 import click
-import dumper
 
 TRACE_LOG_LEVEL = 5
 
@@ -130,7 +128,6 @@ class AccessFormatter(ColourizedFormatter):
         return super().formatMessage(recordcopy)
 
 
-
 class SafeAtoms(dict):
 
     def __init__(self, atoms):
@@ -154,17 +151,14 @@ class SafeAtoms(dict):
             return '-'
 
 
-
 class CustomFormatter(AccessFormatter):
+    atoms_wrapper_class = SafeAtoms
 
-      atoms_wrapper_class = SafeAtoms
-
-      def now(self):
+    def now(self):
         """ return date in Apache Common Log Format """
         return time.strftime('[%d/%b/%Y:%H:%M:%S %z]')
 
-
-      def _get_user(self, environ):
+    def _get_user(self, environ):
         user = None
         http_auth = environ.get("HTTP_AUTHORIZATION")
         if http_auth and http_auth.lower().startswith('basic'):
@@ -184,13 +178,11 @@ class CustomFormatter(AccessFormatter):
                     user = auth[0]
         return user
 
-
-
-      def atoms(self, resp, req, environ, request_time, scope):
+    def atoms(self, resp, req, environ, request_time, scope):
         """ Gets atoms for log formating.
         """
-        #status = resp.status
-        #if isinstance(status, str):
+        # status = resp.status
+        # if isinstance(status, str):
         #    status = status.split(None, 1)[0]
 
         atoms = {}
@@ -201,19 +193,18 @@ class CustomFormatter(AccessFormatter):
         environ_variables = environ.items()
         atoms.update({"{%s}e" % k.lower(): v for k, v in environ_variables})
 
-
         atoms.update({
             'h': scope.get('client', '-'),
             'l': '-',
             'u': self._get_user(environ) or '-',
             't': self.now(),
-            #'r': "%s %s %s" % (environ['REQUEST_METHOD'],
+            # 'r': "%s %s %s" % (environ['REQUEST_METHOD'],
             #                   environ['RAW_URI'],
             #                   environ["SERVER_PROTOCOL"]),
-            #'s': status,
+            # 's': status,
             'm': scope.get('method', '-'),
-            'U': scope.get('raw_path','-'),
-            'q': scope.get('query_string','-'),
+            'U': scope.get('raw_path', '-'),
+            'q': scope.get('query_string', '-'),
             'H': atoms.get("{b'server-protocol'}o", "-"),
             'b': getattr(resp, 'sent', None) is not None and str(resp.sent) or '-',
             'B': getattr(resp, 'sent', None),
@@ -221,33 +212,32 @@ class CustomFormatter(AccessFormatter):
             'a': atoms.get("{b'user-agent'}o", "-"),
             'T': request_time.second,
             'D': (request_time.second * 1000000) + request_time.microsecond,
-            'M': (request_time.second * 1000) + int(request_time.microsecond/1000),
+            'M': (request_time.second * 1000) + int(request_time.microsecond / 1000),
             'L': "%d.%06d" % (request_time.second, request_time.microsecond),
             'p': "<%s>" % os.getpid()
         })
 
         # add request headers
-        #if hasattr(req, 'headers'):
+        # if hasattr(req, 'headers'):
         #    req_headers = req.headers
-        #else:
+        # else:
         #    req_headers = req
 
-        #if hasattr(req_headers, "items"):
+        # if hasattr(req_headers, "items"):
         #    req_headers = req_headers.items()
 
-        #atoms.update({"{%s}i" % k.lower(): v for k, v in req_headers})
+        # atoms.update({"{%s}i" % k.lower(): v for k, v in req_headers})
 
-        #resp_headers = resp.headers
-        #if hasattr(resp_headers, "items"):
+        # resp_headers = resp.headers
+        # if hasattr(resp_headers, "items"):
         #    resp_headers = resp_headers.items()
 
         # add response headers
-        #atoms.update({"{%s}o" % k.lower(): v for k, v in resp_headers})
+        # atoms.update({"{%s}o" % k.lower(): v for k, v in resp_headers})
 
         return atoms
 
-
-      def formatMessage(self, record):
+    def formatMessage(self, record):
         recordcopy = copy(record)
         scope = recordcopy.__dict__["scope"]
         app = scope.get('app')
@@ -260,8 +250,8 @@ class CustomFormatter(AccessFormatter):
         # pprint(vars(app))
         # print("app.state----------------------")
         # pprint(vars(s))
-        #print("endpoint----------------------")
-        #pprint(vars(endpoint))
+        # print("endpoint----------------------")
+        # pprint(vars(endpoint))
         # print("astack----------------------")
         # pprint(vars(astack))
         # print("router----------------------")
@@ -271,7 +261,6 @@ class CustomFormatter(AccessFormatter):
         # dumper.instance_dump = 'all'
         # dumper.max_depth = 10
         # dumper.dump(scope)
-
 
         safe_atoms = self.atoms_wrapper_class(
             self.atoms([], [], os.environ, datetime.now(), scope)
